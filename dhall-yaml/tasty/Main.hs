@@ -13,6 +13,7 @@ import qualified Dhall.JSON.Yaml
 import qualified Dhall.Yaml
 import qualified Dhall.YamlToDhall          as YamlToDhall
 import qualified GHC.IO.Encoding
+import qualified System.IO
 import qualified Test.Tasty
 import qualified Test.Tasty.ExpectedFailure as Tasty.ExpectedFailure
 import qualified Test.Tasty.HUnit
@@ -90,7 +91,9 @@ testDhallToYaml options prefix testScope =
 
         actualValue <- dhallToYaml options (Just inputFile) text
 
-        expectedValue <- Data.ByteString.readFile outputFile
+        expectedValue <- System.IO.withFile outputFile System.IO.ReadMode $ \h -> do
+            System.IO.hSetNewlineMode h System.IO.universalNewlineMode
+            Data.ByteString.hGetContents h
 
         let message = "Conversion to YAML did not generate the expected output"
 
